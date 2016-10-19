@@ -1,7 +1,5 @@
 package com.rubabuddin.nytimessearch.models;
 
-import android.util.Log;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,16 +27,29 @@ public class Article {
     public String getSubtype() {
         return subtype;
     }
+    public int getPhotoHeight() { return photoHeight; }
+    public int getPhotoWidth() { return photoWidth; }
+
 
     String webUrl;
     String headline;
+
+    //image parameters
     String photo;
     String subtype;
+    int photoHeight;
+    int photoWidth;
+
 
     public Article(JSONObject jsonObject){
         try{
             this.webUrl = jsonObject.getString("web_url");
             this.headline = jsonObject.getJSONObject("headline").getString("main");
+
+            this.photoHeight = 0;
+            this.photoWidth = 0;
+
+            int breakTrigger = 0;
 
             JSONArray multimedia = jsonObject.getJSONArray("multimedia");
             int objectNum = 0;
@@ -46,17 +57,27 @@ public class Article {
             if(multimedia.length() > 0){
                 for(int i =0; i<multimedia.length(); i++){
                     subtype = multimedia.getJSONObject(i).getString("subtype");
-                    if(subtype != "thumbnail"){
+                    if(subtype != "thumbnail" && subtype != null){
                         objectNum = i;
+                        this.photoHeight = multimedia.getJSONObject(i).getInt("height");
+                        this.photoWidth = multimedia.getJSONObject(i).getInt("width");
+                        breakTrigger = 1;
                         break;
                     }
+                    if(breakTrigger == 1)
+                        break;
                 }
+                if(this.photoHeight == 0)
+                    this.photoHeight = 800;
+                if(this.photoWidth == 0)
+                    this.photoWidth = 600;
 
                 JSONObject multimediaJson = multimedia.getJSONObject(objectNum);
                 this.photo = "http://www.nytimes.com/" + multimediaJson.getString("url");
-                Log.d("DEBUG", photo.toString());
             } else {
                 this.photo = "";
+                this.photoHeight = 800;
+                this.photoWidth = 600;
             }
         } catch (JSONException e){
 

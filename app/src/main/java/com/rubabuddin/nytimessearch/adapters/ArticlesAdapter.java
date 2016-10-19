@@ -2,6 +2,9 @@ package com.rubabuddin.nytimessearch.adapters;
 
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,70 +16,175 @@ import com.bumptech.glide.Glide;
 import com.rubabuddin.nytimessearch.R;
 import com.rubabuddin.nytimessearch.models.Article;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.List;
 
 /**
  * Created by rubab.uddin on 10/16/2016.
  */
 
-public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.ViewHolder>{
+public class ArticlesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    private final int CARD_ARTICLE = 0,  CARD_HEADLINE = 1;
 
-        public TextView articleHeadline;
-        public ImageView articlePhoto;
+    private List<Article> articles;
+    private Context context;
 
-        public ViewHolder(View itemView) {
+    public ArticlesAdapter(Context context, List<Article> articles) {
+        this.articles = articles;
+        this.context = context;
+    }
+
+    private Context getContext() {
+        return context;
+    }
+
+    public static class ViewHolderFull extends RecyclerView.ViewHolder {
+
+        final TextView articleHeadline = (TextView) itemView.findViewById(R.id.tvArticleHeadline);
+        final ImageView articlePhoto = (ImageView) itemView.findViewById(R.id.ivArticlePhoto);
+        final CardView cardView = (CardView) itemView.findViewById(R.id.card_view);
+
+        public ViewHolderFull(View itemView) {
             super(itemView);
-            //itemView.setOnClickListener(this);
-            articleHeadline = (TextView) itemView.findViewById(R.id.tvArticleHeadline);
-            articlePhoto = (ImageView) itemView.findViewById(R.id.ivArticlePhoto);
         }
     }
-        private List<Article> articles;
-        private Context context;
+    public static class ViewHolderPartial extends RecyclerView.ViewHolder {
 
-        public ArticlesAdapter(Context context, List<Article> articles) {
-            this.articles = articles;
-            this.context = context;
+        final TextView articleHeadline = (TextView) itemView.findViewById(R.id.tvArticleHeadlineOnly);
+        final CardView cardView = (CardView) itemView.findViewById(R.id.card_view_headline);
+
+        public ViewHolderPartial(View itemView) {
+            super(itemView);
         }
+    }
 
-        private Context getContext() {
-            return context;
+    @Override
+    public int getItemViewType(int position) {
+        Article article = articles.get(position);
+        if (article.getPhoto() == null || article.getPhoto().equals("")){
+            return CARD_HEADLINE;
+        } else {
+            return CARD_ARTICLE;
         }
+    }
 
-        @Override
-        public ArticlesAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            Context context = parent.getContext();
-            LayoutInflater inflater = LayoutInflater.from(context);
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
-            // Inflate the custom layout
-            View articleView = inflater.inflate(R.layout.item_article_card, parent, false);
+        RecyclerView.ViewHolder viewHolder;
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
 
-            // Return a new holder instance
-            ViewHolder viewHolder = new ViewHolder(articleView);
-            return viewHolder;
+        switch (viewType) {
+            case CARD_HEADLINE:
+                View headlineView = inflater.inflate(R.layout.item_headline_card, parent, false);
+                viewHolder = new ViewHolderPartial(headlineView);
+                break;
+            case CARD_ARTICLE:
+                View articleView = inflater.inflate(R.layout.item_article_card, parent, false);
+                viewHolder = new ViewHolderFull(articleView);
+                break;
+            default:
+                View v = inflater.inflate(R.layout.item_headline_card, parent, false);
+                viewHolder = new ViewHolderPartial(v);
+                break;
         }
+        return viewHolder;
+    }
 
-        @Override
-        public void onBindViewHolder(ArticlesAdapter.ViewHolder viewHolder, int position) {
+    public static Bitmap getBitmapFromURL(String src) {
+        try {
+            URL url = new URL(src);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream input = connection.getInputStream();
+            Bitmap myBitmap = BitmapFactory.decodeStream(input);
+            return myBitmap;
+        } catch (IOException e) {
+            // Log exception
+            return null;
+        }
+    }
 
-            Article article = articles.get(position);
+    private void configureViewHolderFull(ViewHolderFull viewHolderFull, int position) {
+        Article article = articles.get(position);
+        viewHolderFull.articleHeadline.setText(article.getHeadline());
+        Glide.with(context)
+                .load(article.getPhoto())
+                .placeholder(R.drawable.article_blank)
+                .error(R.drawable.article_blank)
+                .override(800, 600) //height, width
+                //.override(article.getPhotoHeight(), article.getPhotoWidth()) //height, width
+                //.transform(new RoundedCornersTransformation(10, 10))
+                .into(viewHolderFull.articlePhoto);
+    }
 
-            viewHolder.articleHeadline.setText(articles.get(position).getHeadline());
-            //holder.articlePhoto.setImageResource(articles.get(position).getPhoto());
+    private void configureViewHolderPartial(ViewHolderPartial viewHolderPartial, int position) {
+        Article article = articles.get(position);
+        viewHolderPartial.articleHeadline.setText(article.getHeadline());
+    }
 
+    @Override
+    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
+        switch (viewHolder.getItemViewType()) {
+            case CARD_HEADLINE:
+                ViewHolderPartial viewHolderPartial = (ViewHolderPartial) viewHolder;
+                configureViewHolderPartial(viewHolderPartial, position);
+                break;
+            case CARD_ARTICLE:
+                ViewHolderFull viewHolderFull = (ViewHolderFull) viewHolder;
+                configureViewHolderFull(viewHolderFull, position);
+                break;
+            default:
+                viewHolderPartial = (ViewHolderPartial) viewHolder;
+                configureViewHolderPartial(viewHolderPartial, position);
+                break;
+        }
+    }
+/*
+        Bitmap bitmap = getBitmapFromURL(article.getPhoto());
+        Palette.from(bitmap).maximumColorCount(24).generate(new Palette.PaletteAsyncListener() {
+            @Override
+            public void onGenerated(Palette palette) {
+                // Get the "vibrant" color swatch based on the bitmap
+                Palette.Swatch vibrant = palette.getVibrantSwatch();
+                if (vibrant != null) {
+                    // Set the background color of a layout based on the vibrant color
+                    //viewHolder.cardView.setBackgroundColor(vibrant.getRgb());
+                    // Update the title TextView with the proper text color
+                    //viewHolder.articleHeadline.setTextColor(vibrant.getTitleTextColor());
+                }
+            }
+        });
+*/
+ /*       viewHolder.articleHeadline.setText(article.getHeadline());
+        //holder.articlePhoto.setImageResource(articles.get(position).getPhoto());
+        Log.d("DEBUG", article.getPhotoHeight() + " , " + article.getPhotoWidth());
+        if (article.getPhoto() == null || article.getPhoto() == "") {
             Glide.with(context)
-                    .load(articles.get(position).getPhoto())
-                    .placeholder(R.drawable.article_blank)
-                    .error(R.drawable.article_blank)
+                    .load(R.drawable.article_blank)
+                    .override(800, 600) //height, width
+                    //.override(article.getPhotoHeight(), article.getPhotoWidth()) //height, width
                     //.transform(new RoundedCornersTransformation(10, 10))
                     .into(viewHolder.articlePhoto);
-
+        } else {
+            Glide.with(context)
+                    .load(article.getPhoto())
+                    .placeholder(R.drawable.article_blank)
+                    .error(R.drawable.article_blank)
+                    .override(800, 600) //height, width
+                    //.override(article.getPhotoHeight(), article.getPhotoWidth()) //height, width
+                    //.transform(new RoundedCornersTransformation(10, 10))
+                    .into(viewHolder.articlePhoto);
         }
-
-        @Override
-        public int getItemCount() {
-            return this.articles.size();
-        }
+    }
+*/
+    @Override
+    public int getItemCount() {
+        return this.articles.size();
+    }
 }

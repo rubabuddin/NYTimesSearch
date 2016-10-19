@@ -5,7 +5,7 @@
     android:clickable="true"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/card_view"
+    android:id="@+id/card_view_headline"
     card_view:cardUseCompatPadding="true"
     card_view:cardElevation="8dp"
     card_view:cardCornerRadius="4dp">
@@ -15,28 +15,14 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center">
 
-        <ImageView
-            android:id="@+id/ivArticlePhoto"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            tools:src="@mipmap/ic_launcher"
-            android:scaleType="centerCrop" />
-
         <TextView
-            android:id="@+id/tvArticleHeadline"
+            android:id="@+id/tvArticleHeadlineOnly"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
             tools:text="Bernie Sanders wins Presidential Election"
-            android:textColor="#ffffff"
+            android:textColor="#000000"
             android:padding="5dp"
-            android:layout_alignLeft="@id/ivArticlePhoto"
-            android:layout_alignRight="@id/ivArticlePhoto"
-            android:layout_alignBottom="@id/ivArticlePhoto"
-            android:gravity="left"
-            />
-
+            android:gravity="start"/>
     </RelativeLayout>
-
-
 </android.support.v7.widget.CardView>
