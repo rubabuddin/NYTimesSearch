@@ -9,7 +9,7 @@ import java.util.ArrayList;
 /**
  * Created by rubab.uddin on 10/16/2016.
  */
-
+//@Parcel
 public class Article {
 
     public String getWebUrl() {
