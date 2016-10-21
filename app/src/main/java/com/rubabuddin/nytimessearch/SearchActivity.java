@@ -21,6 +21,7 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.rubabuddin.nytimessearch.adapters.ArticlesAdapter;
+import com.rubabuddin.nytimessearch.helpers.EndlessRecyclerViewScrollListener;
 import com.rubabuddin.nytimessearch.models.Article;
 
 import org.json.JSONArray;
@@ -40,7 +41,7 @@ public class SearchActivity extends AppCompatActivity {
 
     List<Article> articles = new ArrayList<Article>();
     ArticlesAdapter adapter;
-
+    String userSubmittedQuery = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,8 +66,15 @@ public class SearchActivity extends AppCompatActivity {
         staggeredGridLayoutManager = new StaggeredGridLayoutManager(2,1);
         recyclerView.setLayoutManager(staggeredGridLayoutManager);
 
-        //blank at first since there is no data -> List<Article> staggeredList = getListItemData();
-        //List<Article> staggeredList = getListItemData();
+        recyclerView.addOnScrollListener(new EndlessRecyclerViewScrollListener(staggeredGridLayoutManager) {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount) {
+                // Triggered only when new data needs to be appended to the list
+                // Add whatever code is needed to append new items to the bottom of the list
+                loadMoreDataFromApi(page);
+            }
+        });
+
         adapter = new ArticlesAdapter(this, articles);
         recyclerView.setAdapter(adapter);
     }
@@ -80,6 +88,53 @@ public class SearchActivity extends AppCompatActivity {
         } catch (IOException e)          { e.printStackTrace(); }
         catch (InterruptedException e) { e.printStackTrace(); }
         return false;
+    }
+
+    //implement endless pagination
+    public void loadMoreDataFromApi(int page) {
+        // Send an API request to retrieve appropriate data using the offset value as a parameter.
+        //  --> Deserialize API response and then construct new objects to append to the adapter
+        //  --> Notify the adapter of the changes
+        int curSize = adapter.getItemCount();
+
+
+        AsyncHttpClient client = new AsyncHttpClient();
+        String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json";
+
+        RequestParams params = new RequestParams();
+        params.put("api-key", "1e6e43a0007345d2b3957763bb2e0c1b");
+        params.put("page", page);
+        params.put("q", userSubmittedQuery);
+
+        client.get(url, params, new JsonHttpResponseHandler(){
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                Log.d("DEBUG", response.toString());
+                List<Article> moreArticles = new ArrayList<Article>();
+                JSONArray articleJsonResults = null;
+                try{
+                    articleJsonResults = response.getJSONObject("response").getJSONArray("docs");
+                    Log.d("DEBUG", articleJsonResults.toString());
+                    moreArticles.addAll(Article.fromJSONArray(articleJsonResults));
+                    Log.d("DEBUG", moreArticles.toString());
+                    articles.addAll(moreArticles);
+                    Log.d("DEBUG", articles.toString());
+                    //adapter.addAll(Article.fromJSONArray(articleJsonResults));
+                    //articles = fromJSONArray(articleJsonResults);
+                    //Log.d("DEBUG", articles.toString());
+                    //Log.d("DEBUG", adapter.toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                super.onFailure(statusCode, headers, throwable, errorResponse);
+            }
+        });
+
+        adapter.notifyItemRangeInserted(curSize, articles.size() - 1);
     }
 
     @Override
@@ -102,9 +157,9 @@ public class SearchActivity extends AppCompatActivity {
 
                 // workaround to avoid issues with some emulators and keyboard devices firing twice if a keyboard enter is used
                 // see https://code.google.com/p/android/issues/detail?id=24599
+                userSubmittedQuery = query;
 
 
-                //PUT THIS SOME WHERE ELSE
 
                 searchView.clearFocus();
                // Toast.makeText(this, "Searching for " + query, Toast.LENGTH_SHORT).show();
