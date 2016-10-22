@@ -1,5 +1,7 @@
 package com.rubabuddin.nytimessearch.models;
 
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,7 +50,16 @@ public class Article{
     public Article(JSONObject jsonObject){
         try{
             this.webUrl = jsonObject.getString("web_url");
+            if(this.webUrl == null || this.webUrl.isEmpty()){
+                this.webUrl = jsonObject.getString("url");
+                Log.d("Values", this.webUrl.toString());
+            }
+
             this.headline = jsonObject.getJSONObject("headline").getString("main");
+            if(this.headline == null || this.headline.isEmpty()){
+                this.headline = jsonObject.getString("title");
+                Log.d("Values", this.headline.toString());
+            }
 
             this.photoHeight = 0;
             this.photoWidth = 0;

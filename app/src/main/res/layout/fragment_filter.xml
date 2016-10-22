@@ -39,6 +39,7 @@
         android:layout_height="wrap_content"
         android:text="@string/search_start_date"
         android:id="@+id/btnSearchStartDate"
+        style="@style/Widget.AppCompat.Button.Borderless"
         android:gravity="center|center_vertical|start"
         android:paddingLeft="16sp"
         android:layout_marginTop="16sp"/>
@@ -46,6 +47,7 @@
     <Button
         android:layout_width="133dp"
         android:layout_height="wrap_content"
+        style="@style/Widget.AppCompat.Button.Borderless"
         android:text="@string/search_end_date"
         android:id="@+id/btnSearchEndDate"
         android:gravity="center|center_vertical|start"
@@ -55,7 +57,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/colorAccent"
+        android:background="@color/cardview_text_color"
         android:layout_marginTop="16sp"
         ></View>
 
@@ -63,19 +65,24 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16sp">
+
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/set_filter"
-            android:id="@+id/btnSetFilter"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"/>
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/Widget.AppCompat.Button.Borderless"
             android:text="@string/clear_filter"
             android:id="@+id/btnClearFilter"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/set_filter"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:id="@+id/btnSetFilter"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
     </RelativeLayout>
 </LinearLayout>

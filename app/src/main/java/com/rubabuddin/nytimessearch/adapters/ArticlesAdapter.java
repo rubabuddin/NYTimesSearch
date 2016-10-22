@@ -131,7 +131,7 @@ public class ArticlesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             @Override
             public void onGenerated(Palette palette) {
                 // Get the "vibrant" color swatch based on the bitmap
-                Palette.Swatch vibrant = palette.getLightVibrantSwatch();
+                Palette.Swatch vibrant = palette.getDarkMutedSwatch();
                 if (vibrant != null) {
                     // Set the background color of a layout based on the vibrant color
                     viewHolderFull.cardViewContainer.setBackgroundColor(vibrant.getRgb());

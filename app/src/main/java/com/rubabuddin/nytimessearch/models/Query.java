@@ -1,22 +1,26 @@
 package com.rubabuddin.nytimessearch.models;
 
 import com.loopj.android.http.RequestParams;
-import java.util.Calendar;
+
+import org.parceler.Parcel;
+
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 import static com.rubabuddin.nytimessearch.R.string.news_desk;
 
 /**
  * Created by rubab.uddin on 10/21/2016.
  */
+@Parcel
 public class Query{
 
-    private String queryStr;
-    private int page;
-    private String sortOrder;
-    private String newsDeskFilters;
-    private Calendar beginDate;
-    private Calendar endDate;
+    String queryStr;
+    int page;
+    String sortOrder;
+    String newsDeskFilters;
+    Calendar beginDate;
+    Calendar endDate;
 
         //on filter submit
         public Query(String queryString, int page, String sortOrder, String newsDeskFilters, Calendar beginDate, Calendar endDate) {
@@ -54,6 +58,10 @@ public class Query{
             this.beginDate = query.beginDate;
             this.endDate = query.endDate;
         }
+
+    //empty constructor needed for Parceler
+    public Query(){
+    }
 
     public String getQueryStr() {
         return queryStr;

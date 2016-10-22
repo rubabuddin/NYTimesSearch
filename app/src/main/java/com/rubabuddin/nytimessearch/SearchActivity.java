@@ -5,12 +5,14 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -22,6 +24,7 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.rubabuddin.nytimessearch.adapters.ArticlesAdapter;
+import com.rubabuddin.nytimessearch.fragments.FilterDialogFragment;
 import com.rubabuddin.nytimessearch.helpers.EndlessRecyclerViewScrollListener;
 import com.rubabuddin.nytimessearch.helpers.ItemClickSupport;
 import com.rubabuddin.nytimessearch.models.Article;
@@ -38,17 +41,17 @@ import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
 
-public class SearchActivity extends AppCompatActivity {
+public class SearchActivity extends AppCompatActivity implements FilterDialogFragment.FilterListener {
 
     private final String API_KEY = "1e6e43a0007345d2b3957763bb2e0c1b";
+    //private final String API_KEY = "227c750bb7714fc39ef1559ef1bd8329";
     private final String SEARCH_URL = "https://api.nytimes.com/svc/search/v2/articlesearch.json";
     private final String TOP_STORIES_URL = "https://api.nytimes.com/svc/topstories/v2/home.json";
 
     private StaggeredGridLayoutManager staggeredGridLayoutManager;
     private List<Article> articles = new ArrayList<Article>();
     private ArticlesAdapter adapter;
-    private Query previousQuery;
-    //private String userSubmittedQuery = "";
+    Query previousQuery;
     private MenuItem filterItem;
 
     RecyclerView recyclerView;
@@ -61,7 +64,7 @@ public class SearchActivity extends AppCompatActivity {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
-        View parentLayout = findViewById(R.id.content_search);
+        View parentLayout = findViewById(R.id.activity_search);
 
         if(!isOnline()){
             Snackbar.make(parentLayout, R.string.no_internet, Snackbar.LENGTH_INDEFINITE).show();
@@ -78,6 +81,7 @@ public class SearchActivity extends AppCompatActivity {
 
         adapter = new ArticlesAdapter(this, articles);
         recyclerView.setAdapter(adapter);
+
         setupArticleClickListener();
         showTopStories();
     }
@@ -106,7 +110,9 @@ public class SearchActivity extends AppCompatActivity {
                     articleJsonResults = response.getJSONArray("results");
                     articles.clear();
                     articles.addAll(Article.fromJSONArray(articleJsonResults));
+                    Log.d("DEBUG", articles.toString());
                     adapter.notifyDataSetChanged();
+                    Log.d("DEBUG", adapter.toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -251,9 +257,22 @@ public class SearchActivity extends AppCompatActivity {
         });
 
         filterItem = menu.findItem(R.id.action_filter);
-        //filterItem.setVisible(false);
+        filterItem.setVisible(false);
 
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public void onExitFilter(Query query) {
+        previousQuery = query;
+        searchArticle(previousQuery, true);
+    }
+
+    //initiated on click of filter action button
+    public void showFilter(MenuItem mi) {
+        FragmentManager fm = getSupportFragmentManager();
+        FilterDialogFragment filterDialogFragment = FilterDialogFragment.newInstance(previousQuery);
+        filterDialogFragment.show(fm, "fragment_filter");
     }
 
     @Override
@@ -261,8 +280,15 @@ public class SearchActivity extends AppCompatActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+        switch(item.getItemId()){
+            case R.id.action_filter:
+                showFilter(item);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
 
-        return super.onOptionsItemSelected(item);
+
     }
+
 }
