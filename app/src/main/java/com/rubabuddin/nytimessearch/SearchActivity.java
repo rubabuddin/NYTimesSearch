@@ -251,7 +251,7 @@ public class SearchActivity extends AppCompatActivity {
         });
 
         filterItem = menu.findItem(R.id.action_filter);
-        filterItem.setVisible(false);
+        //filterItem.setVisible(false);
 
         return super.onCreateOptionsMenu(menu);
     }

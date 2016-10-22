@@ -15,7 +15,7 @@
     <item android:id="@+id/action_filter"
         android:title="Filter"
         android:icon="@drawable/filter"
-        app:showAsAction="collapseActionView|ifRoom"
+        app:showAsAction="ifRoom"
         android:orderInCategory="10" />
 
 </menu>
