@@ -3,14 +3,15 @@ package com.rubabuddin.nytimessearch.models;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.parceler.Parcel;
 
 import java.util.ArrayList;
 
 /**
  * Created by rubab.uddin on 10/16/2016.
  */
-//@Parcel
-public class Article {
+@Parcel
+public class Article{
 
     public String getWebUrl() {
         return webUrl;
@@ -40,6 +41,9 @@ public class Article {
     int photoHeight;
     int photoWidth;
 
+    //empty constructor needed for Parceler
+    public Article(){
+    }
 
     public Article(JSONObject jsonObject){
         try{

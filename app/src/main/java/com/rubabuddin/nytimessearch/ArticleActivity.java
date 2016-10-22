@@ -1,11 +1,15 @@
 package com.rubabuddin.nytimessearch;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import com.rubabuddin.nytimessearch.models.Article;
+
+import org.parceler.Parcels;
 
 public class ArticleActivity extends AppCompatActivity {
 
@@ -16,7 +20,8 @@ public class ArticleActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        final String url = getIntent().getStringExtra("url");
+        Article article = (Article) Parcels.unwrap(getIntent().getParcelableExtra("article"));
+        final String url = article.getWebUrl();
 
         WebView webView = (WebView) findViewById(R.id.wvArticle);
 

@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -55,6 +56,7 @@ public class ArticlesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         final TextView articleHeadline = (TextView) itemView.findViewById(R.id.tvArticleHeadline);
         final ImageView articlePhoto = (ImageView) itemView.findViewById(R.id.ivArticlePhoto);
         final CardView cardView = (CardView) itemView.findViewById(R.id.card_view);
+        final RelativeLayout cardViewContainer = (RelativeLayout) itemView.findViewById(R.id.cardViewContainer);
 
         public ViewHolderFull(View itemView) {
             super(itemView);
@@ -123,6 +125,22 @@ public class ArticlesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private void configureViewHolderFull(final ViewHolderFull viewHolderFull, int position) {
         Article article = articles.get(position);
         viewHolderFull.articleHeadline.setText(article.getHeadline());
+
+        Bitmap bitmap = getBitmapFromURL(article.getPhoto());
+        Palette.from(bitmap).maximumColorCount(24).generate(new Palette.PaletteAsyncListener() {
+            @Override
+            public void onGenerated(Palette palette) {
+                // Get the "vibrant" color swatch based on the bitmap
+                Palette.Swatch vibrant = palette.getLightVibrantSwatch();
+                if (vibrant != null) {
+                    // Set the background color of a layout based on the vibrant color
+                    viewHolderFull.cardViewContainer.setBackgroundColor(vibrant.getRgb());
+                    // Update the title TextView with the proper text color
+                    viewHolderFull.articleHeadline.setTextColor(vibrant.getTitleTextColor());
+                }
+            }
+        });
+
         Glide.with(context)
                 .load(article.getPhoto())
                 .placeholder(R.drawable.article_blank)
@@ -132,22 +150,7 @@ public class ArticlesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 //.override(article.getPhotoHeight(), article.getPhotoWidth()) //height, width
                 //.transform(new RoundedCornersTransformation(10, 10))
                 .into(viewHolderFull.articlePhoto);
-
-        Bitmap bitmap = getBitmapFromURL(article.getPhoto());
-        Palette.from(bitmap).maximumColorCount(24).generate(new Palette.PaletteAsyncListener() {
-            @Override
-            public void onGenerated(Palette palette) {
-                // Get the "vibrant" color swatch based on the bitmap
-                Palette.Swatch vibrant = palette.getVibrantSwatch();
-                if (vibrant != null) {
-                    // Set the background color of a layout based on the vibrant color
-                    viewHolderFull.cardView.setBackgroundColor(vibrant.getRgb());
-                    // Update the title TextView with the proper text color
-                    viewHolderFull.articleHeadline.setTextColor(vibrant.getTitleTextColor());
-                }
-            }
-        });
-/*
+        /*
         viewHolderFull.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
                 listener.onItemClick(item);

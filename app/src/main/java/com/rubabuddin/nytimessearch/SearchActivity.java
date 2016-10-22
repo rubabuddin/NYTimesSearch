@@ -1,5 +1,6 @@
 package com.rubabuddin.nytimessearch;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -10,23 +11,26 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.rubabuddin.nytimessearch.adapters.ArticlesAdapter;
 import com.rubabuddin.nytimessearch.helpers.EndlessRecyclerViewScrollListener;
+import com.rubabuddin.nytimessearch.helpers.ItemClickSupport;
 import com.rubabuddin.nytimessearch.models.Article;
+import com.rubabuddin.nytimessearch.models.Query;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.parceler.Parcels;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,12 +40,18 @@ import cz.msebera.android.httpclient.Header;
 
 public class SearchActivity extends AppCompatActivity {
 
-    private StaggeredGridLayoutManager staggeredGridLayoutManager;
-    //search bsr is on action bar
+    private final String API_KEY = "1e6e43a0007345d2b3957763bb2e0c1b";
+    private final String SEARCH_URL = "https://api.nytimes.com/svc/search/v2/articlesearch.json";
+    private final String TOP_STORIES_URL = "https://api.nytimes.com/svc/topstories/v2/home.json";
 
-    List<Article> articles = new ArrayList<Article>();
-    ArticlesAdapter adapter;
-    String userSubmittedQuery = "";
+    private StaggeredGridLayoutManager staggeredGridLayoutManager;
+    private List<Article> articles = new ArrayList<Article>();
+    private ArticlesAdapter adapter;
+    private Query previousQuery;
+    //private String userSubmittedQuery = "";
+    private MenuItem filterItem;
+
+    RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,25 +70,19 @@ public class SearchActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        final RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        recyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         recyclerView.setHasFixedSize(true);
 
         staggeredGridLayoutManager = new StaggeredGridLayoutManager(2,1);
         recyclerView.setLayoutManager(staggeredGridLayoutManager);
 
-        recyclerView.addOnScrollListener(new EndlessRecyclerViewScrollListener(staggeredGridLayoutManager) {
-            @Override
-            public void onLoadMore(int page, int totalItemsCount) {
-                // Triggered only when new data needs to be appended to the list
-                // Add whatever code is needed to append new items to the bottom of the list
-                loadMoreDataFromApi(page);
-            }
-        });
-
         adapter = new ArticlesAdapter(this, articles);
         recyclerView.setAdapter(adapter);
+        setupArticleClickListener();
+        showTopStories();
     }
 
+    //check network connectivity
     public boolean isOnline() {
         Runtime runtime = Runtime.getRuntime();
         try {
@@ -90,51 +94,131 @@ public class SearchActivity extends AppCompatActivity {
         return false;
     }
 
-    //implement endless pagination
-    public void loadMoreDataFromApi(int page) {
-        // Send an API request to retrieve appropriate data using the offset value as a parameter.
-        //  --> Deserialize API response and then construct new objects to append to the adapter
-        //  --> Notify the adapter of the changes
-        int curSize = adapter.getItemCount();
-
-
-        AsyncHttpClient client = new AsyncHttpClient();
-        String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json";
-
+    private void showTopStories() {
         RequestParams params = new RequestParams();
-        params.put("api-key", "1e6e43a0007345d2b3957763bb2e0c1b");
-        params.put("page", page);
-        params.put("q", userSubmittedQuery);
-
-        client.get(url, params, new JsonHttpResponseHandler(){
+        AsyncHttpClient client = new AsyncHttpClient();
+        params.put("api-key", API_KEY);
+        client.get(TOP_STORIES_URL, params, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                Log.d("DEBUG", response.toString());
-                List<Article> moreArticles = new ArrayList<Article>();
                 JSONArray articleJsonResults = null;
-                try{
-                    articleJsonResults = response.getJSONObject("response").getJSONArray("docs");
-                    Log.d("DEBUG", articleJsonResults.toString());
-                    moreArticles.addAll(Article.fromJSONArray(articleJsonResults));
-                    Log.d("DEBUG", moreArticles.toString());
-                    articles.addAll(moreArticles);
-                    Log.d("DEBUG", articles.toString());
-                    //adapter.addAll(Article.fromJSONArray(articleJsonResults));
-                    //articles = fromJSONArray(articleJsonResults);
-                    //Log.d("DEBUG", articles.toString());
-                    //Log.d("DEBUG", adapter.toString());
+                try {
+                    articleJsonResults = response.getJSONArray("results");
+                    articles.clear();
+                    articles.addAll(Article.fromJSONArray(articleJsonResults));
+                    adapter.notifyDataSetChanged();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
-
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                super.onFailure(statusCode, headers, throwable, errorResponse);
+                Toast.makeText(SearchActivity.this, "Top Stories not found", Toast.LENGTH_SHORT).show();
             }
         });
+    }
 
-        adapter.notifyItemRangeInserted(curSize, articles.size() - 1);
+    //load more pages
+    private void searchArticle(int page){
+        if(previousQuery != null) {
+            Query query = new Query(previousQuery, page);
+            searchArticle(query, false);
+        }
+    }
+
+    private void searchArticle(String queryString){
+        filterItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        filterItem.setVisible(true);
+
+        Query query;
+
+        if (previousQuery == null) {
+            //create new search with queryString
+            query = new Query(queryString);
+        } else {
+            //use previous query filters witn new query String
+            query = new Query(previousQuery, queryString);
+        }
+        previousQuery = query;
+        searchArticle(query, true);
+    }
+
+    private void searchArticle(Query query, boolean clearView){
+        RequestParams params = query.getParams(API_KEY);
+        AsyncHttpClient client = new AsyncHttpClient();
+
+        if (clearView) { //new search view articles
+            recyclerView.clearOnScrollListeners();
+            recyclerView.addOnScrollListener(new EndlessRecyclerViewScrollListener(staggeredGridLayoutManager) {
+                @Override
+                public void onLoadMore(int page, int totalItemsCount) {
+                    loadMoreDataFromApi(page);
+                }
+            });
+
+            client.get(SEARCH_URL, params, new JsonHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                    JSONArray articleJsonResults = null;
+                    try {
+                        articleJsonResults = response.getJSONObject("response").getJSONArray("docs");
+                        articles.clear();
+                        articles.addAll(Article.fromJSONArray(articleJsonResults));
+                        adapter.notifyDataSetChanged();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                    super.onFailure(statusCode, headers, throwable, errorResponse);
+                }
+            });
+        } else { //load more on page scroll
+            client.get(SEARCH_URL, params, new JsonHttpResponseHandler() {
+                @Override
+                public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                    JSONArray articleJsonResults = null;
+                    try {
+                        articleJsonResults = response.getJSONObject("response").getJSONArray("docs");
+                        articles.addAll(Article.fromJSONArray(articleJsonResults));
+                        int curSize = adapter.getItemCount();
+                        adapter.notifyItemRangeInserted(curSize, articles.size() - 1);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                @Override
+                public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                    Toast.makeText(SearchActivity.this, "Loading more articles failed!", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+    }
+
+    //implement endless pagination
+    public void loadMoreDataFromApi(int page) {
+        if (page > 99) {
+            return; // limit to 100 pages
+        }
+        searchArticle(page);
+    }
+
+    //launch article view activity
+    private void setupArticleClickListener() {
+        ItemClickSupport.addTo(recyclerView).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
+            @Override
+            public void onItemClicked(RecyclerView recyclerView, int position, View v) {
+                Intent i = new Intent(getApplicationContext(), ArticleActivity.class);
+                //selected article
+                Article article = articles.get(position);
+                // pass parcelable article into intent
+                i.putExtra("article", Parcels.wrap(article));
+                startActivity(i);
+            }
+        });
     }
 
     @Override
@@ -147,67 +231,31 @@ public class SearchActivity extends AppCompatActivity {
 
         int searchEditId = android.support.v7.appcompat.R.id.search_src_text;
         EditText et = (EditText) searchView.findViewById(searchEditId);
-        et.setTextColor(Color.WHITE);
-        et.setHintTextColor(Color.WHITE);
+        et.setTextColor(Color.BLACK);
+        et.setHintTextColor(Color.BLACK);
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 // perform query here
-
+                searchArticle(query);
                 // workaround to avoid issues with some emulators and keyboard devices firing twice if a keyboard enter is used
                 // see https://code.google.com/p/android/issues/detail?id=24599
-                userSubmittedQuery = query;
-
-
-
                 searchView.clearFocus();
-               // Toast.makeText(this, "Searching for " + query, Toast.LENGTH_SHORT).show();
-
-                AsyncHttpClient client = new AsyncHttpClient();
-                String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json";
-
-                RequestParams params = new RequestParams();
-                params.put("api-key", "1e6e43a0007345d2b3957763bb2e0c1b");
-                params.put("page", 0);
-                params.put("q", query);
-
-                client.get(url, params, new JsonHttpResponseHandler(){
-                    @Override
-                    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                        Log.d("DEBUG", response.toString());
-                        JSONArray articleJsonResults = null;
-                        try{
-                            articleJsonResults = response.getJSONObject("response").getJSONArray("docs");
-                            Log.d("DEBUG", articleJsonResults.toString());
-                            articles.addAll(Article.fromJSONArray(articleJsonResults));
-                            Log.d("DEBUG", articles.toString());
-                            //adapter.addAll(Article.fromJSONArray(articleJsonResults));
-                            //articles = fromJSONArray(articleJsonResults);
-                            //Log.d("DEBUG", articles.toString());
-                            adapter.notifyDataSetChanged();
-                            Log.d("DEBUG", adapter.toString());
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                        super.onFailure(statusCode, headers, throwable, errorResponse);
-                    }
-                });
-
                 return true;
             }
-
             @Override
             public boolean onQueryTextChange(String newText) {
                 return false;
             }
         });
+
+        filterItem = menu.findItem(R.id.action_filter);
+        filterItem.setVisible(false);
+
         return super.onCreateOptionsMenu(menu);
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -216,11 +264,5 @@ public class SearchActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         return super.onOptionsItemSelected(item);
-    }
-
-    private List<Article> getListItemData(){
-        //List<Article> articles = new ArrayList<Article>();
-        //adapter.notifyDataSetChanged();
-        return articles;
     }
 }

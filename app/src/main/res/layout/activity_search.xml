@@ -24,7 +24,7 @@
             android:id="@+id/ivToolbar"
             android:layout_height="match_parent"
             android:adjustViewBounds="true"
-            android:src="@drawable/nyt_logo"
+            android:src="@drawable/nyt_logo_light"
             android:layout_gravity="center_horizontal"
             />
     </android.support.design.widget.AppBarLayout>

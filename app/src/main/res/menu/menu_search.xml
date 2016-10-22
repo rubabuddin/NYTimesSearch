@@ -8,6 +8,8 @@
         android:icon="@drawable/magnify"
         app:showAsAction="collapseActionView|ifRoom"
         android:orderInCategory="5"
+        app:theme="@style/ThemeOverlay.AppCompat.Light"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         app:actionViewClass="android.support.v7.widget.SearchView"/>
 
     <item android:id="@+id/action_filter"

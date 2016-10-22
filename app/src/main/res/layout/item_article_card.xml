@@ -1,38 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:clickable="true"
+    android:layout_margin="1dp"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/card_view"
-    card_view:cardUseCompatPadding="true"
     card_view:cardElevation="8dp"
-    card_view:cardCornerRadius="4dp">
+    card_view:cardCornerRadius="0dp"
+    android:padding="0dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center">
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:id="@+id/cardViewContainer">
 
         <ImageView
             android:id="@+id/ivArticlePhoto"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             tools:src="@mipmap/ic_launcher"
-            android:scaleType="centerCrop" />
+            android:scaleType="centerCrop"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
 
         <TextView
             android:id="@+id/tvArticleHeadline"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textSize="16sp"
             tools:text="Bernie Sanders wins Presidential Election"
-            android:textColor="#ffffff"
-            android:padding="5dp"
+            android:padding="6dp"
+            android:layout_below="@+id/ivArticlePhoto"
             android:layout_alignLeft="@id/ivArticlePhoto"
             android:layout_alignRight="@id/ivArticlePhoto"
-            android:layout_alignBottom="@id/ivArticlePhoto"
             android:gravity="left"
             />
 
