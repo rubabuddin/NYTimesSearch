@@ -10,9 +10,13 @@
     <string name="set_filter">Set Filter</string>
     <string name="clear_filter">Clear Filter</string>
 
+    <string name="all">All</string>
+    <string name="sports">Sports</string>
+    <string name="fashion">Fashion</string>
+
     <string-array name="sort_type_array">
-        <item>Newest first</item>
-        <item>Oldest first</item>
+        <item>Newest</item>
+        <item>Oldest</item>
     </string-array>
 
     <string-array name="news_desk_array">

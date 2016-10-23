@@ -110,9 +110,7 @@ public class SearchActivity extends AppCompatActivity implements FilterDialogFra
                     articleJsonResults = response.getJSONArray("results");
                     articles.clear();
                     articles.addAll(Article.fromJSONArray(articleJsonResults));
-                    Log.d("DEBUG", articles.toString());
                     adapter.notifyDataSetChanged();
-                    Log.d("DEBUG", adapter.toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -151,6 +149,7 @@ public class SearchActivity extends AppCompatActivity implements FilterDialogFra
 
     private void searchArticle(Query query, boolean clearView){
         RequestParams params = query.getParams(API_KEY);
+        Log.d("DEBUG", params.toString());
         AsyncHttpClient client = new AsyncHttpClient();
 
         if (clearView) { //new search view articles
@@ -169,6 +168,7 @@ public class SearchActivity extends AppCompatActivity implements FilterDialogFra
                     try {
                         articleJsonResults = response.getJSONObject("response").getJSONArray("docs");
                         articles.clear();
+                        //adapter.notifyDataSetChanged();
                         articles.addAll(Article.fromJSONArray(articleJsonResults));
                         adapter.notifyDataSetChanged();
                     } catch (JSONException e) {
@@ -178,6 +178,7 @@ public class SearchActivity extends AppCompatActivity implements FilterDialogFra
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+                    Toast.makeText(SearchActivity.this, "Search with new filter failed!", Toast.LENGTH_SHORT).show();
                     super.onFailure(statusCode, headers, throwable, errorResponse);
                 }
             });
@@ -265,6 +266,7 @@ public class SearchActivity extends AppCompatActivity implements FilterDialogFra
     @Override
     public void onExitFilter(Query query) {
         previousQuery = query;
+        Log.d("DEBUG", previousQuery.toString());
         searchArticle(previousQuery, true);
     }
 

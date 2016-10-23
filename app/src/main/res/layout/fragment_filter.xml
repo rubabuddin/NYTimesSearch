@@ -4,7 +4,6 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:minWidth="300dp"
-    android:minHeight="300dp"
     android:padding="16dp"
     android:layout_gravity="center" android:orientation="vertical"
     android:theme="@style/AppTheme">
@@ -27,12 +26,23 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="@string/news_desk"
         android:paddingTop="16sp"/>
-
-    <Spinner
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/spNewsDesk"
-        android:entries="@array/news_desk_array"/>
+        android:layout_height="wrap_content">
+        <CheckBox android:id="@+id/checkbox_all"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/all" />
+        <CheckBox android:id="@+id/checkbox_sports"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sports" />
+        <CheckBox android:id="@+id/checkbox_fashion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/fashion" />
+    </LinearLayout>
 
     <Button
         android:layout_width="wrap_content"

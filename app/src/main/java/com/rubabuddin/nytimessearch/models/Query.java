@@ -7,7 +7,6 @@ import org.parceler.Parcel;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-import static com.rubabuddin.nytimessearch.R.string.news_desk;
 
 /**
  * Created by rubab.uddin on 10/21/2016.
@@ -18,6 +17,11 @@ public class Query{
     String queryStr;
     int page;
     String sortOrder;
+
+    public void setNewsDeskFilters(String newsDeskFilters) {
+        this.newsDeskFilters = newsDeskFilters;
+    }
+
     String newsDeskFilters;
     Calendar beginDate;
     Calendar endDate;
@@ -108,21 +112,18 @@ public class Query{
             params.put("sort", sortOrder);
         }
 
-        if (newsDeskFilters != null && !newsDeskFilters.equals("All")) {
-            params.put("fq", "news_desk:\""+news_desk+"\"");
+        if (newsDeskFilters != null && !newsDeskFilters.equals("All") && !newsDeskFilters.equals("")){
+            params.put("fq", "news_desk:(" + getNewsDeskFilters() + ")");
         }
 
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+        SimpleDateFormat format1 = new SimpleDateFormat("yyyyMMdd");
         if (beginDate != null) {
-            params.put("begin_date", format.format(beginDate.getTime()));
+            params.put("begin_date", format1.format(beginDate.getTime()));
+            //Log.d("DEBUG", format.format(beginDate.getTime()));
         }
 
         if (endDate != null) {
-            params.put("end_date", format.format(endDate.getTime()));
-        }
-
-        if (newsDeskFilters != null && !newsDeskFilters.equals("All")) {
-            params.put("fq", "news_desk:\""+news_desk+"\"");
+            params.put("end_date", format1.format(endDate.getTime()));
         }
 
         params.put("page", page);

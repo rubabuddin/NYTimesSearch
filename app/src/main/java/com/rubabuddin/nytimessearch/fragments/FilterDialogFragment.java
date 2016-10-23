@@ -4,11 +4,13 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.Spinner;
 
 import com.rubabuddin.nytimessearch.R;
@@ -32,12 +34,12 @@ public class FilterDialogFragment extends DialogFragment implements DatePickerFr
     Button btnSetFilter;
     //@BindView(R.id.btnSetFilter) Button btnSetFilter;
     Button btnClearFilter;
-    Spinner spNewsDesk;
+    CheckBox checkAll;
+    CheckBox checkSports;
+    CheckBox checkFashion;
     Spinner spSortOrder;
     Button btnSearchStartDate;
     Button btnSearchEndDate;
-
-
 
     public FilterDialogFragment() {
         // Empty constructor is required for DialogFragment
@@ -74,7 +76,11 @@ public class FilterDialogFragment extends DialogFragment implements DatePickerFr
         btnSetFilter = (Button) view.findViewById(R.id.btnSetFilter);
         //@BindView(R.id.btnSetFilter) Button btnSetFilter;
         btnClearFilter =(Button) view.findViewById(R.id.btnClearFilter);
-        spNewsDesk = (Spinner) view.findViewById(R.id.spNewsDesk);
+
+        checkAll = (CheckBox) view.findViewById(R.id.checkbox_all);
+        checkSports = (CheckBox) view.findViewById(R.id.checkbox_sports);
+        checkFashion = (CheckBox) view.findViewById(R.id.checkbox_fashion);
+
         spSortOrder = (Spinner) view.findViewById(R.id.spOrder);
         btnSearchStartDate = (Button) view.findViewById(R.id.btnSearchStartDate);
         btnSearchEndDate = (Button) view.findViewById(R.id.btnSearchEndDate);
@@ -86,14 +92,23 @@ public class FilterDialogFragment extends DialogFragment implements DatePickerFr
         beginDate = query.getBeginDate();
         endDate = query.getEndDate();
 
-        String newsDeskFilters = query.getNewsDeskFilters();
-        if (newsDeskFilters != null) {
-            for (int i = 0; i < spNewsDesk.getCount(); i++) {
-                if (newsDeskFilters.equals(spNewsDesk.getItemAtPosition(i).toString())) {
-                    spNewsDesk.setSelection(i);
-                }
+        String newsDeskFilters = "";
+            boolean isAllChecked = checkAll.isChecked();
+            boolean isSportsChecked = checkSports.isChecked();
+            boolean isFashionChecked = checkFashion.isChecked();
+
+            if(isAllChecked){
+                newsDeskFilters="";
+            } else {
+                if(isSportsChecked && isFashionChecked)
+                    newsDeskFilters = "\"sports\"%20\"fashion\"%20\"style\""; //"sports"%20
+                else if(isSportsChecked)
+                    newsDeskFilters = "\"sports\""; //"sports"%20
+                else if(isFashionChecked)
+                    newsDeskFilters = "\"fashion\"%20\"style\""; //"sports"%20
             }
-        }
+
+        query.setNewsDeskFilters(newsDeskFilters);
 
         String sortOrder = query.getSortOrder();
         if (sortOrder != null) {
@@ -154,11 +169,11 @@ public class FilterDialogFragment extends DialogFragment implements DatePickerFr
     }
 
     public void onSetFilter(View view) {
-        String newsDeskFilters = spNewsDesk.getSelectedItem().toString();
+
         String sortOrder = spSortOrder.getSelectedItem().toString();
 
-        query = new Query(query.getQueryStr(), 0, sortOrder, newsDeskFilters, beginDate, endDate);
-
+        query = new Query(query.getQueryStr(), 0, sortOrder, query.getNewsDeskFilters(), beginDate, endDate);
+        Log.d("DEBUG", query.toString());
         FilterListener listener = (FilterListener) getActivity();
         listener.onExitFilter(query);
         dismiss();
