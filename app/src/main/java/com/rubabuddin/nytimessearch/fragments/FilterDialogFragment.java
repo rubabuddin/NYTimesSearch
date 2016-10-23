@@ -92,23 +92,8 @@ public class FilterDialogFragment extends DialogFragment implements DatePickerFr
         beginDate = query.getBeginDate();
         endDate = query.getEndDate();
 
-        String newsDeskFilters = "";
-            boolean isAllChecked = checkAll.isChecked();
-            boolean isSportsChecked = checkSports.isChecked();
-            boolean isFashionChecked = checkFashion.isChecked();
 
-            if(isAllChecked){
-                newsDeskFilters="";
-            } else {
-                if(isSportsChecked && isFashionChecked)
-                    newsDeskFilters = "\"sports\"%20\"fashion\"%20\"style\""; //"sports"%20
-                else if(isSportsChecked)
-                    newsDeskFilters = "\"sports\""; //"sports"%20
-                else if(isFashionChecked)
-                    newsDeskFilters = "\"fashion\"%20\"style\""; //"sports"%20
-            }
-
-        query.setNewsDeskFilters(newsDeskFilters);
+        Log.d("DEBUG", query.toString());
 
         String sortOrder = query.getSortOrder();
         if (sortOrder != null) {
@@ -122,6 +107,23 @@ public class FilterDialogFragment extends DialogFragment implements DatePickerFr
         btnSetFilter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String newsDeskFilters = "";
+                boolean isAllChecked = checkAll.isChecked();
+                boolean isSportsChecked = checkSports.isChecked();
+                boolean isFashionChecked = checkFashion.isChecked();
+
+                if(isAllChecked){
+                    newsDeskFilters="";
+                } else {
+                    if(isSportsChecked && isFashionChecked)
+                        newsDeskFilters = "\"sports\"%20\"fashion\"%20\"style\""; //"sports"%20
+                    else if(isSportsChecked)
+                        newsDeskFilters = "\"sports\""; //"sports"%20
+                    else if(isFashionChecked)
+                        newsDeskFilters = "\"fashion\"%20\"style\""; //"sports"%20
+                }
+
+                query.setNewsDeskFilters(newsDeskFilters);
                 onSetFilter(v);
             }
         });
