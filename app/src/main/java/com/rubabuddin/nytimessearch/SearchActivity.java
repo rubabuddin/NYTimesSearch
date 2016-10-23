@@ -1,13 +1,19 @@
 package com.rubabuddin.nytimessearch;
 
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.support.customtabs.CustomTabsIntent;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.graphics.Palette;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
@@ -33,7 +39,6 @@ import com.rubabuddin.nytimessearch.models.Query;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.parceler.Parcels;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -218,12 +223,42 @@ public class SearchActivity extends AppCompatActivity implements FilterDialogFra
         ItemClickSupport.addTo(recyclerView).setOnItemClickListener(new ItemClickSupport.OnItemClickListener() {
             @Override
             public void onItemClicked(RecyclerView recyclerView, int position, View v) {
+                // Use a CustomTabsIntent.Builder to configure CustomTabsIntent.
+                Article article = articles.get(position);
+                String url = article.getWebUrl();
+                Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_action_share);
+                Intent intent = new Intent(Intent.ACTION_SEND);
+                intent.setType("text/plain");
+                intent.putExtra(Intent.EXTRA_TEXT, url);
+
+                int requestCode = 100;
+
+                PendingIntent pendingIntent = PendingIntent.getActivity(SearchActivity.this,
+                        requestCode,
+                        intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT);
+                CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+                builder.setActionButton(bitmap, "Share Link", pendingIntent, true);
+
+                Palette.Swatch fromPicture = adapter.getVibrant();
+                int argb = fromPicture.getRgb();
+
+                //String hexColor = String.format("#%06X", (0xFFFFFF & argb));
+
+//                int toolBarColor = Color.parseColor(hexColor);
+                builder.setToolbarColor(argb);
+                // set toolbar color and/or setting custom actions before invoking build()
+                // Once ready, call CustomTabsIntent.Builder.build() to create a CustomTabsIntent
+                CustomTabsIntent customTabsIntent = builder.build();
+                // and launch the desired Url with CustomTabsIntent.launchUrl()
+                customTabsIntent.launchUrl(SearchActivity.this, Uri.parse(url));
+                /*
                 Intent i = new Intent(getApplicationContext(), ArticleActivity.class);
                 //selected article
                 Article article = articles.get(position);
                 // pass parcelable article into intent
                 i.putExtra("article", Parcels.wrap(article));
-                startActivity(i);
+                startActivity(i);*/
             }
         });
     }

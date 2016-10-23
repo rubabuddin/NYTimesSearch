@@ -28,6 +28,7 @@ dependencies {
     })
     compile 'org.parceler:parceler-api:1.1.1'
     apt 'org.parceler:parceler:1.1.1'
+    compile 'com.android.support:customtabs:24.0.0+'
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.android.support:palette-v7:24.2.+'
     compile 'com.squareup.picasso:picasso:2.5.2'

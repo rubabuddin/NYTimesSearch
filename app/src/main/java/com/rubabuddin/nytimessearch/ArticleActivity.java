@@ -20,8 +20,8 @@ public class ArticleActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        Article article = (Article) Parcels.unwrap(getIntent().getParcelableExtra("article"));
-        final String url = article.getWebUrl();
+        Article article = (Article) Parcels.unwrap(getIntent().getParcelableExtra(""));
+        final String url = getIntent().getStringExtra("url");
 
         WebView webView = (WebView) findViewById(R.id.wvArticle);
 
