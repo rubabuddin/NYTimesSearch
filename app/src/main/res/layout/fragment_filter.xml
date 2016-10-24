@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/filter_search"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:minWidth="300dp"
     android:padding="16dp"
     android:layout_gravity="center" android:orientation="vertical"
-    android:theme="@style/AppTheme">
+    android:theme="@style/AppTheme"
+    android:windowSoftInputMode="stateHidden">
 
     <TextView
         android:layout_width="wrap_content"
@@ -43,33 +45,66 @@
             android:layout_height="wrap_content"
             android:text="@string/fashion" />
     </LinearLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/search_start_date"
+            android:id="@+id/btnSearchStartDate"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:gravity="center|center_vertical|start"
+            android:paddingLeft="16sp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"/>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/search_start_date"
-        android:id="@+id/btnSearchStartDate"
-        style="@style/Widget.AppCompat.Button.Borderless"
-        android:gravity="center|center_vertical|start"
-        android:paddingLeft="16sp"
-        android:layout_marginTop="16sp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="2016-01-01"
+            android:id="@+id/tvStartDate"
+            android:gravity="center|center_vertical"
+            android:layout_alignBaseline="@+id/btnSearchStartDate"
+            android:layout_alignBottom="@+id/btnSearchStartDate"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
+    </RelativeLayout>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <Button
-        android:layout_width="133dp"
-        android:layout_height="wrap_content"
-        style="@style/Widget.AppCompat.Button.Borderless"
-        android:text="@string/search_end_date"
-        android:id="@+id/btnSearchEndDate"
-        android:gravity="center|center_vertical|start"
-        android:paddingLeft="16sp"
-        android:layout_marginTop="16sp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="2016-10-22"
+            android:id="@+id/tvEndDate"
+            android:gravity="center|center_vertical"
+            android:layout_alignBaseline="@+id/btnSearchEndDate"
+            android:layout_alignBottom="@+id/btnSearchEndDate"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/search_end_date"
+            android:id="@+id/btnSearchEndDate"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:gravity="center|center_vertical|start"
+            android:paddingLeft="16sp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+    </RelativeLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/cardview_text_color"
-        android:layout_marginTop="16sp"
-        ></View>
+        android:background="@color/cardView_text_color"
+        android:layout_marginTop="16sp"/>
 
     <RelativeLayout
         android:layout_width="match_parent"

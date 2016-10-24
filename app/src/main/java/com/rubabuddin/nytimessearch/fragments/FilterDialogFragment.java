@@ -12,12 +12,14 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.rubabuddin.nytimessearch.R;
 import com.rubabuddin.nytimessearch.models.Query;
 
 import org.parceler.Parcels;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import static org.parceler.Parcels.unwrap;
@@ -27,19 +29,22 @@ import static org.parceler.Parcels.unwrap;
  */
 
 public class FilterDialogFragment extends DialogFragment implements DatePickerFragment.DateListener {
-
     private Query query;
     private Calendar beginDate;
     private Calendar endDate;
+    private String sortOrder;
+    private String newsDeskFilters;
+
     Button btnSetFilter;
-    //@BindView(R.id.btnSetFilter) Button btnSetFilter;
     Button btnClearFilter;
     CheckBox checkAll;
     CheckBox checkSports;
     CheckBox checkFashion;
     Spinner spSortOrder;
     Button btnSearchStartDate;
+    TextView tvStartDate;
     Button btnSearchEndDate;
+    TextView tvEndDate;
 
     public FilterDialogFragment() {
         // Empty constructor is required for DialogFragment
@@ -62,7 +67,7 @@ public class FilterDialogFragment extends DialogFragment implements DatePickerFr
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+        getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
         return inflater.inflate(R.layout.fragment_filter, container);
     }
 
@@ -74,7 +79,6 @@ public class FilterDialogFragment extends DialogFragment implements DatePickerFr
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         btnSetFilter = (Button) view.findViewById(R.id.btnSetFilter);
-        //@BindView(R.id.btnSetFilter) Button btnSetFilter;
         btnClearFilter =(Button) view.findViewById(R.id.btnClearFilter);
 
         checkAll = (CheckBox) view.findViewById(R.id.checkbox_all);
@@ -82,18 +86,46 @@ public class FilterDialogFragment extends DialogFragment implements DatePickerFr
         checkFashion = (CheckBox) view.findViewById(R.id.checkbox_fashion);
 
         spSortOrder = (Spinner) view.findViewById(R.id.spOrder);
+
         btnSearchStartDate = (Button) view.findViewById(R.id.btnSearchStartDate);
         btnSearchEndDate = (Button) view.findViewById(R.id.btnSearchEndDate);
-        //ButterKnife.bind(getActivity());
-        super.onViewCreated(view, savedInstanceState);
 
+        tvStartDate = (TextView) view.findViewById(R.id.tvStartDate);
+        tvEndDate = (TextView) view.findViewById(R.id.tvEndDate);
+
+        super.onViewCreated(view, savedInstanceState);
         query = unwrap(getArguments().getParcelable("query"));
 
+        //set previous query options
         beginDate = query.getBeginDate();
         endDate = query.getEndDate();
+        sortOrder = query.getSortOrder();
+        newsDeskFilters = query.getNewsDeskFilters();
 
-
-        Log.d("DEBUG", query.toString());
+        if(beginDate != null){
+            tvStartDate.setText(convertDate(beginDate));
+        }
+        if(endDate != null) {
+            tvEndDate.setText(convertDate(endDate));
+        }
+        if(sortOrder != null){
+            if(sortOrder == "Newest"){
+                spSortOrder.setSelection(0);
+            } else {
+                spSortOrder.setSelection(1);
+            }
+        }
+        if(newsDeskFilters != null){
+            checkAll.setChecked(false);
+            if(newsDeskFilters.contains("sports")){
+                checkSports.setChecked(true);
+            }
+            if(newsDeskFilters.contains("fashion")){
+                checkFashion.setChecked(true);
+            }
+        } else {
+            checkAll.setChecked(true);
+        }
 
         String sortOrder = query.getSortOrder();
         if (sortOrder != null) {
@@ -113,7 +145,7 @@ public class FilterDialogFragment extends DialogFragment implements DatePickerFr
                 boolean isFashionChecked = checkFashion.isChecked();
 
                 if(isAllChecked){
-                    newsDeskFilters="";
+                    newsDeskFilters = null;
                 } else {
                     if(isSportsChecked && isFashionChecked)
                         newsDeskFilters = "\"sports\"%20\"fashion\"%20\"style\""; //"sports"%20
@@ -135,7 +167,6 @@ public class FilterDialogFragment extends DialogFragment implements DatePickerFr
             }
         });
 
-
         btnSearchStartDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -148,6 +179,12 @@ public class FilterDialogFragment extends DialogFragment implements DatePickerFr
                 onSetEndDate(v);
             }
         });
+    }
+
+    public String convertDate(Calendar date){
+        SimpleDateFormat format1 = new SimpleDateFormat("MMM dd yyyy");
+        String formatted = format1.format(date.getTime());
+        return formatted;
     }
 
     public void onSetStartDate(View view) {
@@ -182,7 +219,7 @@ public class FilterDialogFragment extends DialogFragment implements DatePickerFr
     }
 
     public void onClearFilter(View view) {
-        query = new Query(query, 0);
+        query = new Query(query.getQueryStr());
         FilterListener listener = (FilterListener) getActivity();
         listener.onExitFilter(query);
         dismiss();
@@ -192,10 +229,11 @@ public class FilterDialogFragment extends DialogFragment implements DatePickerFr
     public void onDateSet(Calendar c, String tag) {
         if(tag.equals("begin_date")) {
             beginDate = c;
+            tvStartDate.setText(convertDate(beginDate));
+
         } else if (tag.equals("end_date")) {
             endDate = c;
+            tvEndDate.setText(convertDate(endDate));
         }
     }
-
-
 }

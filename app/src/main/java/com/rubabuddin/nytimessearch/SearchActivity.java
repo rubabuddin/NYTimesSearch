@@ -1,6 +1,7 @@
 package com.rubabuddin.nytimessearch;
 
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -24,7 +25,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
@@ -49,16 +49,15 @@ import cz.msebera.android.httpclient.Header;
 public class SearchActivity extends AppCompatActivity implements FilterDialogFragment.FilterListener {
 
     private final String API_KEY = "1e6e43a0007345d2b3957763bb2e0c1b";
-    //private final String API_KEY = "227c750bb7714fc39ef1559ef1bd8329";
     private final String SEARCH_URL = "https://api.nytimes.com/svc/search/v2/articlesearch.json";
     private final String TOP_STORIES_URL = "https://api.nytimes.com/svc/topstories/v2/home.json";
 
     private StaggeredGridLayoutManager staggeredGridLayoutManager;
     private List<Article> articles = new ArrayList<Article>();
     private ArticlesAdapter adapter;
-    Query previousQuery;
     private MenuItem filterItem;
 
+    Query previousQuery;
     RecyclerView recyclerView;
 
     @Override
@@ -68,12 +67,6 @@ public class SearchActivity extends AppCompatActivity implements FilterDialogFra
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
-
-        View parentLayout = findViewById(R.id.activity_search);
-
-        if(!isOnline()){
-            Snackbar.make(parentLayout, R.string.no_internet, Snackbar.LENGTH_INDEFINITE).show();
-        }
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -88,7 +81,29 @@ public class SearchActivity extends AppCompatActivity implements FilterDialogFra
         recyclerView.setAdapter(adapter);
 
         setupArticleClickListener();
-        showTopStories();
+
+    }
+
+    public void onStart(){
+        super.onStart();
+
+        View parentLayout = findViewById(R.id.activity_search);
+        final Snackbar snackBar = Snackbar.make(parentLayout, R.string.no_internet, Snackbar.LENGTH_INDEFINITE);;
+        snackBar.setAction("Retry", new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+               snackBar.dismiss();
+               showTopStories();
+                }
+            });
+        snackBar.show();
+
+
+        if(isOnline()) {
+            snackBar.dismiss();
+            showTopStories();
+        }
+
     }
 
     //check network connectivity
@@ -104,9 +119,16 @@ public class SearchActivity extends AppCompatActivity implements FilterDialogFra
     }
 
     private void showTopStories() {
+        final ProgressDialog progress = new ProgressDialog(this);
+        progress.setTitle("Please wait");
+        progress.setMessage("Loading the latest Top Stories..");
+        progress.setCancelable(false); // disable dismiss by tapping outside of the dialog
+        progress.show();
+
         RequestParams params = new RequestParams();
         AsyncHttpClient client = new AsyncHttpClient();
         params.put("api-key", API_KEY);
+        recyclerView.clearOnScrollListeners();
         client.get(TOP_STORIES_URL, params, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
@@ -116,13 +138,14 @@ public class SearchActivity extends AppCompatActivity implements FilterDialogFra
                     articles.clear();
                     articles.addAll(Article.fromJSONArray(articleJsonResults));
                     adapter.notifyDataSetChanged();
+                    progress.dismiss();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                Toast.makeText(SearchActivity.this, "Top Stories not found", Toast.LENGTH_SHORT).show();
+                Log.d("DEBUG","Top Stories search failed");
             }
         });
     }
@@ -153,8 +176,11 @@ public class SearchActivity extends AppCompatActivity implements FilterDialogFra
     }
 
     private void searchArticle(Query query, boolean clearView){
+        final ProgressDialog progress = new ProgressDialog(this);
+        progress.setTitle("Please wait");
+        progress.setMessage("Searching the New York Times Archive..");
+        progress.setCancelable(false); // disable dismiss by tapping outside of the dialog
         RequestParams params = query.getParams(API_KEY);
-        Log.d("DEBUG", params.toString());
         AsyncHttpClient client = new AsyncHttpClient();
 
         if (clearView) { //new search view articles
@@ -169,13 +195,14 @@ public class SearchActivity extends AppCompatActivity implements FilterDialogFra
             client.get(SEARCH_URL, params, new JsonHttpResponseHandler() {
                 @Override
                 public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                    progress.show();
                     JSONArray articleJsonResults = null;
                     try {
                         articleJsonResults = response.getJSONObject("response").getJSONArray("docs");
                         articles.clear();
-                        //adapter.notifyDataSetChanged();
                         articles.addAll(Article.fromJSONArray(articleJsonResults));
                         adapter.notifyDataSetChanged();
+                        progress.dismiss();
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -183,7 +210,8 @@ public class SearchActivity extends AppCompatActivity implements FilterDialogFra
 
                 @Override
                 public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                    Toast.makeText(SearchActivity.this, "Search with new filter failed!", Toast.LENGTH_SHORT).show();
+                    progress.dismiss();
+                    Log.d("DEBUG","Reapply filter, search failed");
                     super.onFailure(statusCode, headers, throwable, errorResponse);
                 }
             });
@@ -203,13 +231,12 @@ public class SearchActivity extends AppCompatActivity implements FilterDialogFra
                 }
                 @Override
                 public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                    Toast.makeText(SearchActivity.this, "Loading more articles failed!", Toast.LENGTH_SHORT).show();
+                    Log.d("DEBUG","Loading more articles failed, check API limit");
                 }
             });
         }
 
     }
-
     //implement endless pagination
     public void loadMoreDataFromApi(int page) {
         if (page > 99) {
@@ -242,23 +269,13 @@ public class SearchActivity extends AppCompatActivity implements FilterDialogFra
 
                 Palette.Swatch fromPicture = adapter.getVibrant();
                 int argb = fromPicture.getRgb();
-
-                //String hexColor = String.format("#%06X", (0xFFFFFF & argb));
-
-//                int toolBarColor = Color.parseColor(hexColor);
                 builder.setToolbarColor(argb);
+
                 // set toolbar color and/or setting custom actions before invoking build()
                 // Once ready, call CustomTabsIntent.Builder.build() to create a CustomTabsIntent
                 CustomTabsIntent customTabsIntent = builder.build();
                 // and launch the desired Url with CustomTabsIntent.launchUrl()
                 customTabsIntent.launchUrl(SearchActivity.this, Uri.parse(url));
-                /*
-                Intent i = new Intent(getApplicationContext(), ArticleActivity.class);
-                //selected article
-                Article article = articles.get(position);
-                // pass parcelable article into intent
-                i.putExtra("article", Parcels.wrap(article));
-                startActivity(i);*/
             }
         });
     }
@@ -324,8 +341,5 @@ public class SearchActivity extends AppCompatActivity implements FilterDialogFra
             default:
                 return super.onOptionsItemSelected(item);
         }
-
-
     }
-
 }

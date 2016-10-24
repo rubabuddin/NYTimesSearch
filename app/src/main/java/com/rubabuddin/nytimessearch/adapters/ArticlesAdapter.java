@@ -48,11 +48,6 @@ public class ArticlesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         this.context = context;
     }
 
-    public interface OnItemClickListener{
-        void onItemClick(Article article);
-    }
-
-
     private Context getContext() {
         return context;
     }
@@ -61,7 +56,6 @@ public class ArticlesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
         final TextView articleHeadline = (TextView) itemView.findViewById(R.id.tvArticleHeadline);
         final ImageView articlePhoto = (ImageView) itemView.findViewById(R.id.ivArticlePhoto);
-        final CardView cardView = (CardView) itemView.findViewById(R.id.card_view);
         final RelativeLayout cardViewContainer = (RelativeLayout) itemView.findViewById(R.id.cardViewContainer);
 
         public ViewHolderFull(View itemView) {
@@ -146,24 +140,13 @@ public class ArticlesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 }
             }
         });
-
         Glide.with(context)
                 .load(article.getPhoto())
                 .placeholder(R.drawable.article_blank)
                 .error(R.drawable.article_blank)
                 .override(800, 600) //height, width
                 .fitCenter()
-                //.override(article.getPhotoHeight(), article.getPhotoWidth()) //height, width
-                //.transform(new RoundedCornersTransformation(10, 10))
                 .into(viewHolderFull.articlePhoto);
-        /*
-        viewHolderFull.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View v) {
-                listener.onItemClick(item);
-            }
-        });
-*/
-
     }
 
     private void configureViewHolderPartial(ViewHolderPartial viewHolderPartial, int position) {
@@ -189,45 +172,6 @@ public class ArticlesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
-    /*
-
-    @Override public void onViewRecycled(RecyclerView.ViewHolder viewHolder){
-        super.onViewRecycled(viewHolder);
-        switch (viewHolder.getItemViewType()) {
-            case CARD_ARTICLE:
-                //viewHolder = (ViewHolderFull) viewHolder;
-                //Glide.clear((.articlePhoto);
-                break;
-            default:
-                break;
-        }
-
-    }
-    */
-
-
- /*       viewHolder.articleHeadline.setText(article.getHeadline());
-        //holder.articlePhoto.setImageResource(articles.get(position).getPhoto());
-        Log.d("DEBUG", article.getPhotoHeight() + " , " + article.getPhotoWidth());
-        if (article.getPhoto() == null || article.getPhoto() == "") {
-            Glide.with(context)
-                    .load(R.drawable.article_blank)
-                    .override(800, 600) //height, width
-                    //.override(article.getPhotoHeight(), article.getPhotoWidth()) //height, width
-                    //.transform(new RoundedCornersTransformation(10, 10))
-                    .into(viewHolder.articlePhoto);
-        } else {
-            Glide.with(context)
-                    .load(article.getPhoto())
-                    .placeholder(R.drawable.article_blank)
-                    .error(R.drawable.article_blank)
-                    .override(800, 600) //height, width
-                    //.override(article.getPhotoHeight(), article.getPhotoWidth()) //height, width
-                    //.transform(new RoundedCornersTransformation(10, 10))
-                    .into(viewHolder.articlePhoto);
-        }
-    }
-*/
     @Override
     public int getItemCount() {
         return this.articles.size();

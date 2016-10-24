@@ -17,11 +17,6 @@ public class Query{
     String queryStr;
     int page;
     String sortOrder;
-
-    public void setNewsDeskFilters(String newsDeskFilters) {
-        this.newsDeskFilters = newsDeskFilters;
-    }
-
     String newsDeskFilters;
     Calendar beginDate;
     Calendar endDate;
@@ -83,11 +78,15 @@ public class Query{
         return newsDeskFilters;
     }
 
+    public void setNewsDeskFilters(String newsDeskFilters) {
+        this.newsDeskFilters = newsDeskFilters;
+    }
+
     public Calendar getBeginDate() {
         return beginDate;
     }
     public Calendar getEndDate() {
-        return beginDate;
+        return endDate;
     }
 
     private String formatDate(Calendar c) {

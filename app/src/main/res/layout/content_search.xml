@@ -9,7 +9,4 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.rubabuddin.nytimessearch.SearchActivity"
     tools:showIn="@layout/activity_search">
-
-
-
 </RelativeLayout>

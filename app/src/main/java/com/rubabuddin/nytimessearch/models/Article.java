@@ -1,7 +1,5 @@
 package com.rubabuddin.nytimessearch.models;
 
-import android.util.Log;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,17 +46,20 @@ public class Article{
     }
 
     public Article(JSONObject jsonObject){
+        boolean isTopStories = false;
+
         try{
-            this.webUrl = jsonObject.getString("web_url");
-            if(this.webUrl == null || this.webUrl.isEmpty()){
+            if(jsonObject.isNull("url")){
+                this.webUrl = jsonObject.getString("web_url");
+            } else {
                 this.webUrl = jsonObject.getString("url");
-                Log.d("Values", this.webUrl.toString());
+                isTopStories = true;
             }
 
-            this.headline = jsonObject.getJSONObject("headline").getString("main");
-            if(this.headline == null || this.headline.isEmpty()){
+            if(jsonObject.isNull("title")) {
+                this.headline = jsonObject.getJSONObject("headline").getString("main");
+            } else {
                 this.headline = jsonObject.getString("title");
-                Log.d("Values", this.headline.toString());
             }
 
             this.photoHeight = 0;
@@ -88,7 +89,11 @@ public class Article{
                     this.photoWidth = 600;
 
                 JSONObject multimediaJson = multimedia.getJSONObject(objectNum);
-                this.photo = "http://www.nytimes.com/" + multimediaJson.getString("url");
+                if(isTopStories) {
+                    this.photo = multimediaJson.getString("url");
+                } else {
+                    this.photo = "http://www.nytimes.com/" + multimediaJson.getString("url");
+                }
             } else {
                 this.photo = "";
                 this.photoHeight = 800;

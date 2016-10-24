@@ -14,6 +14,8 @@ import java.util.Calendar;
 
 public class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
 
+    DateListener dateListener;
+
     public interface DateListener {
         void onDateSet(Calendar c, String tag);
     }
@@ -41,7 +43,7 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
     public void onDateSet(DatePicker view, int year, int month, int day) {
         Calendar c = Calendar.getInstance();
         c.set(year, month, day);
-        DateListener dateListener = (DateListener) getTargetFragment();
+        dateListener = (DateListener) getTargetFragment();
         dateListener.onDateSet(c, getTag());
     }
 }
