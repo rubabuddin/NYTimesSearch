@@ -53,7 +53,7 @@ The following **additional** features are implemented:
 
 Here's a walkthrough of implemented user stories:
 
-[![Video Walkthrough](nyt_screenshot.png)](videolink)
+[![Video Walkthrough](nyt_screenshot.png)](https://github.com/rubabuddin/NYTimesSearch/blob/master/nyt_walkthrough.mp4?raw=true)
 
 
 ## Notes
